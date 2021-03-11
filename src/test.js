@@ -1,5 +1,5 @@
-const discord = require('discord.js');
-const client = new discord.Client();
+const Discord = require('Discord.js');
+const client = new Discord.Client();
 
 client.on('ready', () => {
     console.log('ready');
@@ -66,7 +66,7 @@ client.on('ready', () => {
 });
 
 async function createAPIMessage(interaction, content) {
-    const apiMessage = await discord.APIMessage.create(client.channels.resolve(interaction.channel_id), content)
+    const apiMessage = await Discord.APIMessage.create(client.channels.resolve(interaction.channel_id), content)
         .resolveData()
         .resolveFiles();
 

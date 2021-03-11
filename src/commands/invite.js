@@ -1,36 +1,22 @@
-const discord = require('discord.js');
-const client = new discord.Client();
+const Discord = require('discord.js');
 
-module.exports = async function (interaction, game) {
+module.exports = async function Invite (msg, game){
 
-    const player = interaction.data.options[0].value;
-            console.log(player)
-            client.users.fetch(player)
-                .then(user => user.send("helo").catch(console.error))
-                .catch(console.error);
-    //await message.react("✅");
-    
-    //await message.react("🟥");
-    /*message.awaitReactions(() => true, { max: 1, time: 60000 })
+    console.log("invite");
+
+    const newPlayer = msg.mentions.users.first();
+
+    const message = await newPlayer.send(new Discord.MessageEmbed().setColor("#5cd1ff").setDescription(":question: **Do you want to join the game?**"));    
+        await message.react("✅");
+        await message.react("🟥");
+        message.awaitReactions(() => true, {max: 1, time: 60000})
         .then(collected => {
             if (collected.first().emoji.name == "✅") {
-                content = "User joined";
-                game.push(players, player);
+                game.push('players', {user: newPlayer, name: newPlayer.username, lifes: 3, anwser: "", awaitingAnwser: false, emoji: game.get("emojis")[game.get("players").length].emoji});
+                msg.channel.send(new Discord.MessageEmbed().setColor("#f5b042").setDescription(`:information_source: **${newPlayer.username} has accepted your invitation and joined the game.**`));
             }
-            else {
-                content = "User declined"
-            }
+            else  msg.channel.send(new Discord.MessageEmbed().setColor("#f5b042").setDescription(`:information_source: **${newPlayer.username} declined your invitation.**`));
             message.delete();
         });
-    new discord.MessageEmbed().setColor("#5cd1ff").setDescription(":question: **Do you wannt to join?**")
-        */
-    client.api.interactions(interaction.id, interaction.token).callback.post({
-        data: {
-            type: 3,
-            data: {
-                content: "helo"
-            }
-        }
-    });
-}
 
+}

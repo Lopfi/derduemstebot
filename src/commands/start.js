@@ -1,30 +1,21 @@
-const discord = require('discord.js');
-const client = new discord.Client();
-const utils = require('../utils/createAPIMessage.js')
+const Discord = require('discord.js');
 
+module.exports = function Start (msg, game) {
 
-module.exports = function (interaction, game) {
-    console.log(interaction)
-    
-    game.set('players', [] );
+    console.log("start");
 
-    const embed = new discord.MessageEmbed()
-        .setTitle("You started a game")
-        .setDescription("There are currently no players in your game. Use the invite command to invite them.")
-        .setAuthor(interaction.member.user.username);
+    game.set('players', []);
+    game.set('moderator', msg.author);
+    game.set('emojis', [{emoji: "🐶", available: true}, 
+                        {emoji: "🐱", available: false} , 
+                        {emoji: "🐭", available: false}, 
+                        {emoji: "🐹", available: false}, 
+                        {emoji: "🐰", available: false}, 
+                        {emoji: "🦊", available: false}, 
+                        {emoji: "🐻", available: false}, 
+                        {emoji: "🐼", available: false}]);
+    game.set('game', {started: true});
+    game.set('game', {anwsersMissing: 0});
 
-    client.api.interactions(interaction.id, interaction.token).callback.post({
-        data: {
-            type: 4,
-            embeds: embed
-        }
-    });
-}
-
-async function createAPIMessage(interaction, content) {
-    const apiMessage = await discord.APIMessage.create(client.channels.resolve(interaction.channel_id), content)
-        .resolveData()
-        .resolveFiles();
-
-    return { ...apiMessage.data, files: apiMessage.files };
+    msg.channel.send(new Discord.MessageEmbed().setColor("#f5b042").setDescription(`:information_source: **${msg.author} has started a new game**`));
 }

@@ -1,95 +1,77 @@
-const discord = require('discord.js');
-const client = new discord.Client();
-const { start, invite } = require('./commands');
+const Discord = require('discord.js');
+const client = new Discord.Client();
+const { start, invite, info, ask  } = require('./commands');
 var db = require('quick.db');
+const secret = require("../secret.json");
+
+var game = new db.table('game');
+global.game = game;
 
 client.on('ready', () => {
-    console.log('ready');
-
-    client.api.applications(client.user.id).guilds('396766980230873108').commands.post({
-        data: {
-            name: "start",
-            description: "starts a new game"
-        }
-    });
-
-    client.api.applications(client.user.id).guilds('396766980230873108').commands.post({
-        data: {
-            name: "invite",
-            description: "Invites a player to the current game",
-
-            options: [
-                {
-                    name: "name",
-                    description: "Name of the person to invite",
-                    type: 6,
-                    required: true
-                }
-            ]
-        }
-    });
-
-    client.api.applications(client.user.id).guilds('396766980230873108').commands.post({
-        data: {
-            name: "end",
-            description: "Ends the current game"
-        }
-    });
-
-    client.api.applications(client.user.id).guilds('396766980230873108').commands.post({
-        data: {
-            name: "ask",
-            description: "Asks a question to all players",
-
-            options: [
-                {
-                    name: "question",
-                    description: "The question to ask everyone",
-                    type: 3,
-                    required: true
-                }
-            ]
-        }
-    });
-
-    client.api.applications(client.user.id).guilds('396766980230873108').commands.post({
-        data: {
-            name: "status",
-            description: "Shows the lifes of all games"
-        }
-    });
-
-    client.api.applications(client.user.id).guilds('396766980230873108').commands.post({
-        data: {
-            name: "restart",
-            description: "resets the lifes off all players"
-        }
-    });
-
-    var game = new db.table('game')
-
-    client.ws.on('INTERACTION_CREATE', async interaction => {
-        const command = interaction.data.name.toLowerCase();
-
-        switch (command) {
-            case 'start': {
-                start(interaction, game)
-                break;
-            }
-            case 'invite': {
-                invite(interaction, game)
-                break;
-            }
-            default:
-                break;
-        }
-    });
-});
+    client.user.setActivity("with stupid people");
+  });
 
 client.on('message', async msg => {
-    if (msg.channel.type == "dm" && !msg.author.bot) {
-
+    if (!msg.author.bot && msg.channel.id == 819117644853805066) {
+        var command = msg.content.trim().toLowerCase();
+        if (command.startsWith("start")) {
+            start(msg, game);
+        }
+        if (command.startsWith("invite")) {
+            invite(msg, game);
+        }
+        if (command.startsWith("info")) {
+            info(msg, game);
+        }
+        if (command.startsWith("ask")) {
+            ask(msg, game, client);
+        }
     }
 });
 
-client.login(require('../config.json').token);
+client.on('message', async msg => {
+    if (!msg.author.bot && msg.channel.type == "dm") {
+        if (game.get('game.anwsersMissing') > 0) {
+            const players = game.get('players');
+            
+            players.forEach(player => {
+                console.log(player.anwser)
+                console.log(player.awaitingAnwser)
+                if (msg.author.id == player.user.id && player.awaitingAnwser) {
+                    player.anwser = msg.content;
+                    player.awaitingAnwser = false;
+                    game.subtract('game.anwsersMissing', 1)
+                }
+                console.log(player.anwser)
+            });
+            game.set('players', players);
+            if (game.get('game.anwsersMissing') <= 0) {
+                const embed = new Discord.MessageEmbed();
+
+                const players = game.get("players");
+
+                embed.setColor("#5cd1ff");
+                embed.setTitle("anwsers");
+                if (players.length > 0) {
+                    for (let i = 0; i < players.length; i++) {
+                        embed.addField(players[i].name + players[i].emoji, players[i].anwser);
+                    }
+                }
+                channel = await client.channels.fetch("819117644853805066");
+                const message = await channel.send(embed);
+                    for (let i = 0; i < players.length; i++) {
+                        await message.react(players[i].emoji)
+                        
+                    }
+                    message.awaitReactions(() => true, {max: players.length, time: 60000}) //await reactions max all players + moderator
+                    .then(collected => {
+                        console.log(collected.count)
+                    });
+            
+                game.set('game.anwsersMissing', 0);
+            }
+        }
+    }
+});
+
+client.login(secret.Discord.secret);

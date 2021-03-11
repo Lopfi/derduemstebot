@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^12.5.1",
+    "Discord.js": "^12.5.1",
     "quick.db": "^7.1.3"
   }
 }
