@@ -35,8 +35,6 @@ client.on('message', async msg => {
             const players = game.get('players');
             
             players.forEach(player => {
-                console.log(player.anwser)
-                console.log(player.awaitingAnwser)
                 if (msg.author.id == player.user.id && player.awaitingAnwser) {
                     player.anwser = msg.content;
                     player.awaitingAnwser = false;
@@ -44,7 +42,9 @@ client.on('message', async msg => {
                 }
                 console.log(player.anwser)
             });
+
             game.set('players', players);
+
             if (game.get('game.anwsersMissing') <= 0) {
                 const embed = new Discord.MessageEmbed();
 
@@ -63,11 +63,32 @@ client.on('message', async msg => {
                         await message.react(players[i].emoji)
                         
                     }
-                    message.awaitReactions(() => true, {max: players.length, time: 60000}) //await reactions max all players + moderator
-                    .then(collected => {
-                        console.log(collected.count)
+                    collected = await message.awaitReactions(() => true, {max: players.length, time: 60000}) //await reactions max all players + moderator
+                    const reactions = collected.array();
+                    const highest = [reactions[0]];
+                    reactions.forEach(reaction => {
+                        if (reaction.count > highest.count) {
+                            highest = [reaction];                            
+                        }
+                        if (reaction.count == highest.count) {
+                            highest.push(reaction);
+                        }
                     });
-            
+                    const embed2 = new Discord.MessageEmbed();
+                    embed2.setColor("#5cd1ff");
+                    embed2.setTitle("Loser");
+                    embed2.setDescription("This Player(s) is stupid:")
+
+                    highest.forEach(reaction => {
+                        players.forEach(player => {
+                            if (reaction.emoji.name == player.emoji) {
+                                embed2.addField(player.name, reaction.emoji.name)
+                                player.lifes -= 1;
+                            }
+                        })
+                    });
+                channel.send(embed2);
+                game.set('players', players);
                 game.set('game.anwsersMissing', 0);
             }
         }
