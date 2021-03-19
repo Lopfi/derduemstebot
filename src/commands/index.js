@@ -1,11 +1,15 @@
-const start = require('./start.js');
-const invite = require('./invite.js');
-const info = require('./info.js')
-const ask = require('./ask.js')
+const start = require('./start');
+const invite = require('./invite');
+const info = require('./info');
+const ask = require('./ask');
+const restart = require('./restart');
+const setLifes = require('./setLifes')
 
 module.exports = {
     start: start,
     invite: invite,
     info: info,
-    ask: ask
+    ask: ask,
+    restart: restart,
+    setLifes: setLifes
 }

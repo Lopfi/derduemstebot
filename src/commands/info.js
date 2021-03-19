@@ -12,7 +12,9 @@ module.exports = async function Start (msg, game) {
     embed.addField("Moderator:", game.get('moderator').username);
     if (players.length > 0) {
         for (let i = 0; i < players.length; i++) {
+            if (players[i].lifes > 0) {
             embed.addField(players[i].name, players[i].emoji + ":heart: " + players[i].lifes);
+            }
         }
     }
     embed.addField("Missing anwsers:", game.get('game.anwsersMissing'));
